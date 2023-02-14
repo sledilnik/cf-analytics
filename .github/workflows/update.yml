@@ -39,7 +39,7 @@ jobs:
       with:
         go-version: '1.19'
         check-latest: true
-        cache: true
+        # cache: true
 
     - name: "go run"
       env:
