@@ -64,7 +64,10 @@ func main() {
 	}
 
 	// seek csvfile to the end
-	csvFile.Seek(0, 2)
+	_, err = csvFile.Seek(0, 2)
+	if err != nil {
+		panic(err)
+	}
 	csvWriter := csv.NewWriter(csvFile)
 
 	today := time.Now()
@@ -75,7 +78,10 @@ func main() {
 		// if no records, start from 1 year ago
 		startDate = today.Add(-31539600 * time.Second).Format("2006-01-02")
 		// write header to csv file
-		csvWriter.Write([]string{"date", "requests", "pageViews", "uniques"})
+		err := csvWriter.Write([]string{"date", "requests", "pageViews", "uniques"})
+		if err != nil {
+			panic(err)
+		}
 		csvWriter.Flush()
 		log.Printf("Empty CSV detected, starting from %s", startDate)
 	} else {
@@ -166,7 +172,10 @@ func main() {
 		for i, group := range item.HttpRequests1dGroups {
 			if i != len(item.HttpRequests1dGroups)-1 {
 				log.Println(group.Dimensions.Date, group.Sum.Requests, group.Sum.PageViews, group.Uniq.Uniques)
-				csvWriter.Write([]string{group.Dimensions.Date, fmt.Sprintf("%d", group.Sum.Requests), fmt.Sprintf("%d", group.Sum.PageViews), fmt.Sprintf("%d", group.Uniq.Uniques)})
+				err = csvWriter.Write([]string{group.Dimensions.Date, fmt.Sprintf("%d", group.Sum.Requests), fmt.Sprintf("%d", group.Sum.PageViews), fmt.Sprintf("%d", group.Uniq.Uniques)})
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}
