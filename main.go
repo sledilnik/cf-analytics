@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -35,15 +36,20 @@ func main() {
 
 	token := os.Getenv("CF_TOKEN")
 	if token == "" {
-		panic("CF_TOKEN is not set")
+		panic("CF_TOKEN environment variable is not set")
 	}
 
-	zoneId := os.Getenv("CF_ZONE_ID")
-	if token == "" {
-		panic("CF_ZONE_ID is not set")
+	var outFileName = flag.String("out", "", "The output csv filename to write to")
+	var zoneId = flag.String("zone", "", "The CF zone id")
+	flag.Parse()
+	if *outFileName == "" {
+		panic("out parameter is not set")
+	}
+	if *zoneId == "" {
+		panic("zone parameter is not set")
 	}
 
-	csvFile, err := os.OpenFile("access.csv", os.O_RDWR|os.O_CREATE, 0755)
+	csvFile, err := os.OpenFile(*outFileName, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		panic(err)
 	}
