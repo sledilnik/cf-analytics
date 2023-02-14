@@ -110,6 +110,8 @@ func main() {
 		},
 	})
 
+	fmt.Println(string(reqBytes))
+
 	if err != nil {
 		panic(err)
 	}
@@ -140,6 +142,9 @@ func main() {
 				} `json:"zones"`
 			} `json:"viewer"`
 		} `json:"data"`
+		Errors []struct {
+			Message string `json:"message"`
+		} `json:"errors"`
 	}{}
 
 	err = json.NewDecoder(resp.Body).Decode(&responseHolder)
@@ -147,10 +152,16 @@ func main() {
 		panic(err)
 	}
 
+	if len(responseHolder.Errors) > 0 {
+		panic(responseHolder.Errors[0].Message)
+	}
+
 	for _, item := range responseHolder.Data.Viewer.Zones {
-		for _, group := range item.HttpRequests1dGroups {
-			log.Println(group.Dimensions.Date, group.Sum.Requests, group.Sum.PageViews, group.Uniq.Uniques)
-			csvWriter.Write([]string{group.Dimensions.Date, fmt.Sprintf("%d", group.Sum.Requests), fmt.Sprintf("%d", group.Sum.PageViews), fmt.Sprintf("%d", group.Uniq.Uniques)})
+		for i, group := range item.HttpRequests1dGroups {
+			if i != len(item.HttpRequests1dGroups)-1 {
+				log.Println(group.Dimensions.Date, group.Sum.Requests, group.Sum.PageViews, group.Uniq.Uniques)
+				csvWriter.Write([]string{group.Dimensions.Date, fmt.Sprintf("%d", group.Sum.Requests), fmt.Sprintf("%d", group.Sum.PageViews), fmt.Sprintf("%d", group.Uniq.Uniques)})
+			}
 		}
 	}
 
