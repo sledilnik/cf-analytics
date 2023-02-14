@@ -1,0 +1,71 @@
+name: CF stats update
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the main branch
+on:
+  push:
+    branches: [ main ]
+    paths:
+    - '.github/workflows/update.yaml'
+    - '*.go'
+    - 'go.*'
+  pull_request:
+    branches: [ main ]
+    paths:
+    - '.github/workflows/update.yaml'
+    - '*.go'
+    - 'go.*'
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '33 3 * * *' # GMT, once a day
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  update-data:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '1.19'
+        check-latest: true
+        cache: true
+
+    - name: "go run"
+      env:
+        CF_TOKEN: ${{ secrets.CF_TOKEN }}
+      run: |
+        mkdir -p data/
+        go run main.go -out=data/sledilnik-org-access.csv         -zone=${{ secrets.CF_ZONE_ID_SLEDILNIK_ORG }}
+        go run main.go -out=data/podnebnik-org-access.csv         -zone=${{ secrets.CF_ZONE_ID_PODNEBNIK_ORG }}
+        go run main.go -out=data/slovenia-ukraine-info-access.csv -zone=${{ secrets.CF_ZONE_ID_SLOVENIA_UKRAINE_INFO }}
+
+    # Runs a set of commands using the runners shell
+    - name: Check git diff
+      run: |
+        ls -la data/*
+        git status
+        git diff
+
+    # Git commit + push, see https://github.com/github-actions-x/commit
+    - name: "Publish data changes to git"
+      if: github.ref == 'refs/heads/main'
+      uses: github-actions-x/commit@v2.9
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        push-branch: 'main'
+        commit-message: "CF stats data update 🤖"
+        rebase: 'true' # pull and rebase before commit
+        files: data/*
+        name: Sledilnik CF stats data scrape bot 🤖
+        email: info@sledilnik.org
