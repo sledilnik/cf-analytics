@@ -48,7 +48,7 @@ jobs:
         mkdir -p data/
         go run main.go -out=data/sledilnik-org-access.csv         -zone=${{ secrets.CF_ZONE_ID_SLEDILNIK_ORG }}
         go run main.go -out=data/podnebnik-org-access.csv         -zone=${{ secrets.CF_ZONE_ID_PODNEBNIK_ORG }}
-        go run main.go -out=data/slovenia-ukraine-info-access.csv -zone=${{ secrets.CF_ZONE_ID_SLOVENIA_UKRAINE_INFO }}
+        # go run main.go -out=data/slovenia-ukraine-info-access.csv -zone=${{ secrets.CF_ZONE_ID_SLOVENIA_UKRAINE_INFO }}
 
     # Runs a set of commands using the runners shell
     - name: Check git diff
